@@ -1,3 +1,7 @@
+
+
+<img width="1907" height="1014" alt="Screenshot 2026-10-25 172304" src="https://github.com/user-attachments/assets/a7423820-0f8d-409a-87d5-8f4dd4f00bd7" />
+
 # Laxmi Chit Fund ATM - Web Frontend
 
 An interactive, responsive web frontend for the **Laxmi Chit Fund ATM** application, designed to faithfully match the color theme, fonts, texture, and workflow of the original desktop application.
