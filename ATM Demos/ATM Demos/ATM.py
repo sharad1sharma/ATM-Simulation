@@ -528,23 +528,19 @@ class ATMGUI:
         self.clear_content()
         self.title_lbl.config(text="Withdraw")
         frm = tk.Frame(self.content_area, bg=self.screen_bg)
-        frm.pack(pady=20)
+        frm.pack(pady=16)
         tk.Label(frm, text="Enter the amount to withdraw (multiples of 10):", bg=self.screen_bg, fg=self.text_fg).pack(anchor="w")
         speak("Enter the amount to withdraw")
         self.wd_entry = tk.Entry(frm, font=("Helvetica", 12))
         self.wd_entry.pack(pady=8)
         btn_frame = tk.Frame(frm, bg=self.screen_bg)
         btn_frame.pack(pady=6)
-        tk.Button(btn_frame, text="Withdraw", command=self.withdraw_pin_step, bg=self.accent, fg=self.bg_color, bd=0).grid(row=0, column=0, padx=6)
-        tk.Button(btn_frame, text="Back", command=self.show_account_home, bg=self.bg_color, fg=self.accent, bd=0).grid(row=0, column=1, padx=6)
+        tk.Button(btn_frame, text="Withdraw", command=self.do_withdraw, bg=self.accent, fg=self.bg_color, bd=0, padx=12, pady=4).grid(row=0, column=0, padx=6)
+        tk.Button(btn_frame, text="Back", command=self.show_account_home, bg=self.bg_color, fg=self.accent, bd=1, relief="ridge", padx=10, pady=4).grid(row=0, column=1, padx=6)
 
         self.output_panel = tk.Text(self.content_area, height=10, bg="#021813", fg=self.accent, font=("Courier", 10))
         self.output_panel.pack(fill="both", expand=True, padx=12, pady=(12,6))
         self.output_panel.config(state="disabled")
-
-    def withdraw_pin_step(self):
-        # ask PIN and, if correct, call do_withdraw
-        ask_pin_and_continue(self.root, self.user_index, pins, self.do_withdraw)
 
     def do_withdraw(self):
         val = (self.wd_entry.get() or "").strip()
@@ -564,15 +560,40 @@ class ATMGUI:
         save_data('balances.txt', balances)
         record_transaction(self.current_user, "Withdrawn", amt, balances[self.user_index])
         receipt = generate_receipt(self.current_user, "Withdraw", amt, balances[self.user_index])
+
+        # Show in terminal output panel
         self.output_panel.config(state="normal")
         self.output_panel.delete("1.0", "end")
         self.output_panel.insert("end", receipt)
         self.output_panel.config(state="disabled")
-        self.set_message("Withdrawal successful - collect cash")
+
+        self.set_message(f"Withdrawal successful! Your new balance is {balances[self.user_index]} Rupees", fg=self.accent)
         speak("Withdrawal Successful!")
 
+        # Popup Window for Withdrawal
+        popup = tk.Toplevel(self.root)
+        popup.title("Withdrawal Receipt Popup")
+        popup.geometry("380x320")
+        popup.configure(bg=self.screen_bg)
+        popup.resizable(False, False)
+        popup.transient(self.root)
+        popup.grab_set()
+
+        tk.Label(popup, text="💵 Withdrawal Successful", bg=self.screen_bg, fg=self.accent,
+                 font=("Helvetica", 13, "bold")).pack(pady=(10, 4))
+        tk.Label(popup, text=f"Withdrawn: ₹ {amt:,} Rupees", bg=self.screen_bg, fg=self.accent,
+                 font=("Courier New", 14, "bold")).pack(pady=2)
+
+        txt = tk.Text(popup, height=8, bg="#021813", fg=self.accent, font=("Courier", 9))
+        txt.pack(fill="x", padx=14, pady=8)
+        txt.insert("end", receipt)
+        txt.config(state="disabled")
+
+        tk.Button(popup, text="Collect Cash & Close", command=popup.destroy, bg=self.accent, fg=self.bg_color,
+                  font=("Helvetica", 10, "bold"), bd=0, padx=16, pady=4).pack(pady=(4, 10))
+
     # -----------------------
-    # Transfer Money (PIN required)
+    # Transfer Money (Direct execution + popup)
     # -----------------------
     def open_transfer_screen(self):
         if not self.require_login("transfer money"):
@@ -581,7 +602,7 @@ class ATMGUI:
         self.title_lbl.config(text="Transfer Money")
 
         frm = tk.Frame(self.content_area, bg=self.screen_bg)
-        frm.pack(pady=20)
+        frm.pack(pady=16)
 
         tk.Label(frm, text="Recipient Username:", bg=self.screen_bg, fg=self.text_fg).grid(row=0, column=0, sticky="w", pady=6)
         self.recipient_entry = tk.Entry(frm, font=("Helvetica", 12))
@@ -593,15 +614,12 @@ class ATMGUI:
 
         btn_frame = tk.Frame(frm, bg=self.screen_bg)
         btn_frame.grid(row=2, column=0, columnspan=2, pady=12)
-        tk.Button(btn_frame, text="Proceed", command=self.transfer_pin_step, bg=self.accent, fg=self.bg_color, bd=0).grid(row=0, column=0, padx=6)
-        tk.Button(btn_frame, text="Back", command=self.show_account_home, bg=self.bg_color, fg=self.accent, bd=0).grid(row=0, column=1, padx=6)
+        tk.Button(btn_frame, text="Proceed", command=self.do_transfer, bg=self.accent, fg=self.bg_color, bd=0, padx=12, pady=4).grid(row=0, column=0, padx=6)
+        tk.Button(btn_frame, text="Back", command=self.show_account_home, bg=self.bg_color, fg=self.accent, bd=1, relief="ridge", padx=10, pady=4).grid(row=0, column=1, padx=6)
 
         self.output_panel = tk.Text(self.content_area, height=10, bg="#021813", fg=self.accent, font=("Courier", 10))
         self.output_panel.pack(fill="both", expand=True, padx=12, pady=(12,6))
         self.output_panel.config(state="disabled")
-
-    def transfer_pin_step(self):
-        ask_pin_and_continue(self.root, self.user_index, pins, self.do_transfer)
 
     def do_transfer(self):
         recipient = (self.recipient_entry.get() or "").strip().lower()
@@ -641,13 +659,18 @@ class ATMGUI:
 
         # create receipt
         receipt = (
-            f"--- TRANSFER RECEIPT ---\n"
+            "╔════════════════════════════════════╗\n"
+            "║        TRANSFER RECEIPT            ║\n"
+            "╠════════════════════════════════════╣\n"
+            f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
             f"From: {self.current_user}\n"
             f"To: {recipient}\n"
             f"Amount: {amt} Rupees\n"
-            f"New Balance: {balances[self.user_index]} Rupees\n"
-            f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-            f"-------------------------"
+            f"Your New Bal: {balances[self.user_index]} Rupees\n"
+            f"Recipient Bal: {balances[recipient_index]} Rupees\n"
+            "╠════════════════════════════════════╣\n"
+            "Thank you for using our ATM!\n"
+            "╚════════════════════════════════════╝"
         )
 
         self.output_panel.config(state="normal")
@@ -655,9 +678,30 @@ class ATMGUI:
         self.output_panel.insert("end", receipt)
         self.output_panel.config(state="disabled")
 
-        self.set_message("Transfer successful")
-        print(f"Transfer successful. You sent {amt} rupees to {recipient}. Your balance is {balances[self.user_index]} rupees")
-        speak(f"Transfer successful.")
+        self.set_message(f"Transfer successful! Sent ₹{amt} to {recipient}. Your balance is {balances[self.user_index]} Rupees", fg=self.accent)
+        speak("Transfer successful.")
+
+        # Popup Window for Transfer Receipt
+        popup = tk.Toplevel(self.root)
+        popup.title("Transfer Receipt Popup")
+        popup.geometry("380x340")
+        popup.configure(bg=self.screen_bg)
+        popup.resizable(False, False)
+        popup.transient(self.root)
+        popup.grab_set()
+
+        tk.Label(popup, text="↗️ Transfer Successful", bg=self.screen_bg, fg=self.accent,
+                 font=("Helvetica", 13, "bold")).pack(pady=(10, 4))
+        tk.Label(popup, text=f"Transferred: ₹ {amt:,} to {recipient}", bg=self.screen_bg, fg=self.accent,
+                 font=("Courier New", 12, "bold")).pack(pady=2)
+
+        txt = tk.Text(popup, height=9, bg="#021813", fg=self.accent, font=("Courier", 9))
+        txt.pack(fill="x", padx=14, pady=8)
+        txt.insert("end", receipt)
+        txt.config(state="disabled")
+
+        tk.Button(popup, text="Close / OK", command=popup.destroy, bg=self.accent, fg=self.bg_color,
+                  font=("Helvetica", 10, "bold"), bd=0, padx=16, pady=4).pack(pady=(4, 10))
 
     # -----------------------
     # Helper: Require Login Popup
@@ -701,12 +745,12 @@ class ATMGUI:
         return True
 
     # -----------------------
-    # Balance (PIN required + Popup)
+    # Balance (Direct execution + terminal panel + Popup)
     # -----------------------
     def balance_with_pin(self):
         if not self.require_login("check your balance"):
             return
-        ask_pin_and_continue(self.root, self.user_index, pins, self.show_balance)
+        self.show_balance()
 
     def show_balance(self):
         bal = balances[self.user_index]
@@ -715,23 +759,29 @@ class ATMGUI:
         
         # Display on Main Screen
         main_box = tk.Frame(self.content_area, bg=self.screen_bg)
-        main_box.pack(pady=20)
+        main_box.pack(pady=12)
         
         lbl = tk.Label(main_box, text=f"Available Balance\n\n₹ {bal:,} Rupees",
-                       bg=self.screen_bg, fg=self.accent, font=("Helvetica", 20, "bold"))
-        lbl.pack(pady=10)
+                       bg=self.screen_bg, fg=self.accent, font=("Helvetica", 18, "bold"))
+        lbl.pack(pady=6)
 
         user_info = tk.Label(main_box, text=f"Account Holder: {self.current_user.upper()}",
                              bg=self.screen_bg, fg=self.muted, font=("Helvetica", 10))
-        user_info.pack(pady=(0, 16))
+        user_info.pack(pady=(0, 8))
 
         btn_row = tk.Frame(main_box, bg=self.screen_bg)
-        btn_row.pack(pady=8)
+        btn_row.pack(pady=4)
         tk.Button(btn_row, text="Back to Account Home", command=self.show_account_home,
-                  bg=self.bg_color, fg=self.accent, font=("Helvetica", 11), bd=1, relief="ridge", padx=12, pady=5).grid(row=0, column=0, padx=6)
+                  bg=self.bg_color, fg=self.accent, font=("Helvetica", 10), bd=1, relief="ridge", padx=12, pady=4).grid(row=0, column=0, padx=6)
 
         record_transaction(self.current_user, "Balance Check", "-", bal)
         receipt = generate_receipt(self.current_user, "Balance Check", "-", bal)
+
+        # Terminal Output Panel on Screen
+        self.output_panel = tk.Text(self.content_area, height=8, bg="#021813", fg=self.accent, font=("Courier", 10))
+        self.output_panel.pack(fill="both", expand=True, padx=12, pady=(8,6))
+        self.output_panel.insert("end", receipt)
+        self.output_panel.config(state="disabled")
 
         # Popup Window for Balance
         popup = tk.Toplevel(self.root)
@@ -755,16 +805,16 @@ class ATMGUI:
         tk.Button(popup, text="Close / OK", command=popup.destroy, bg=self.accent, fg=self.bg_color,
                   font=("Helvetica", 10, "bold"), bd=0, padx=16, pady=4).pack(pady=(4, 10))
 
-        self.set_message("Balance displayed successfully!", fg=self.accent)
+        self.set_message(f"Available Balance: ₹{bal:,} Rupees", fg=self.accent)
         speak(f"Your balance is {bal} Rupees")
 
     # -----------------------
-    # Mini statement (PIN required + Popup)
+    # Mini statement (Direct execution + terminal + Popup)
     # -----------------------
     def mini_with_pin(self):
         if not self.require_login("view your mini statement"):
             return
-        ask_pin_and_continue(self.root, self.user_index, pins, self.show_mini_statement)
+        self.show_mini_statement()
 
     def show_mini_statement(self):
         history = transaction_history.get(self.current_user, [])

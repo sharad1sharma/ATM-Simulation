@@ -237,6 +237,7 @@
               state.pins = data.pins;
               state.balances = data.balances;
               saveData(false);
+              updateDemoDropdown();
             }
           })
           .catch(() => {});
@@ -250,12 +251,29 @@
     }
   }
 
+  function updateDemoDropdown() {
+    if (!elements.demoSelect) return;
+    const currentVal = elements.demoSelect.value;
+    elements.demoSelect.innerHTML = '<option value="">Quick Login...</option>';
+    state.users.forEach((u, i) => {
+      const p = state.pins[i] || '0000';
+      const b = state.balances[i] || 0;
+      const opt = document.createElement('option');
+      opt.value = `${u}:${p}`;
+      opt.textContent = `${u} (PIN: ${p}, Bal: ₹${b.toLocaleString()})`;
+      elements.demoSelect.appendChild(opt);
+    });
+    if (currentVal) elements.demoSelect.value = currentVal;
+  }
+
   function saveData(syncBackend = true) {
     try {
       localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(state.users));
       localStorage.setItem(STORAGE_KEY_PINS, JSON.stringify(state.pins));
       localStorage.setItem(STORAGE_KEY_BALANCES, JSON.stringify(state.balances));
       localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(state.history));
+      updateDemoDropdown();
+      updateSidebarStatus();
 
       // Asynchronously sync with Python text files if server is present
       if (syncBackend && window.location.protocol.startsWith('http')) {
@@ -394,8 +412,9 @@
   }
 
   function updateSidebarStatus() {
-    if (state.currentUser) {
-      elements.sidebarStatus.textContent = `Status: Logged in as ${state.currentUser}`;
+    if (state.currentUser && state.userIndex !== null) {
+      const curBal = state.balances[state.userIndex] !== undefined ? state.balances[state.userIndex] : 0;
+      elements.sidebarStatus.innerHTML = `Status: Logged in as <strong>${state.currentUser}</strong><br><span style="color: var(--accent); font-size: 0.82rem;">Bal: ₹${curBal.toLocaleString()}</span>`;
       elements.cardHolderName.textContent = state.currentUser.toUpperCase();
     } else {
       elements.sidebarStatus.textContent = 'Status: Awaiting login';
@@ -839,13 +858,11 @@
   }
 
   /**
-   * 4. Balance Screen (with PIN popup first + Balance Popup Modal)
+   * 4. Balance Screen (Direct display with terminal receipt + popup)
    */
   function balanceWithPin() {
     if (!requireLogin('check your balance')) return;
-    askPinAndContinue(() => {
-      showBalance();
-    });
+    showBalance();
   }
 
   function showBalance() {
@@ -869,10 +886,11 @@
         <button class="secondary-btn" id="bal-back-btn">Back to Menu</button>
         <button class="submit-btn" id="bal-receipt-btn">View / Print Receipt</button>
       </div>
+      <div class="terminal-output" style="width: 100%; max-width: 440px; margin-top: 14px; text-align: left;">${receipt}</div>
     `;
 
     elements.screenContent.appendChild(view);
-    setMessage('Balance displayed successfully', 'success');
+    setMessage(`Current available balance: ₹${bal.toLocaleString()} Rupees`, 'success');
     playSuccessSound();
     speak(`Your balance is ${bal} Rupees`);
     showToast(`💰 Available Balance: ₹${bal.toLocaleString()}`, 'success', '💰');
@@ -1029,7 +1047,7 @@
     });
 
     document.getElementById('withdraw-submit-btn').addEventListener('click', () => {
-      withdrawPinStep(input.value.trim());
+      doWithdraw(input.value.trim());
     });
 
     document.getElementById('withdraw-back-btn').addEventListener('click', () => {
@@ -1038,9 +1056,9 @@
     });
   }
 
-  function withdrawPinStep(amtVal) {
+  function doWithdraw(val) {
     playBeep();
-    const amt = parseInt(amtVal, 10);
+    const amt = parseInt(val, 10);
     if (isNaN(amt) || amt <= 0 || amt % 10 !== 0) {
       setMessage('Invalid amount. Enter positive multiple of 10.', 'error');
       playErrorSound();
@@ -1056,12 +1074,6 @@
       return;
     }
 
-    askPinAndContinue(() => {
-      doWithdraw(amt);
-    });
-  }
-
-  function doWithdraw(amt) {
     state.balances[state.userIndex] -= amt;
     saveData();
     recordTransaction(state.currentUser, 'Withdrawn', amt, state.balances[state.userIndex]);
@@ -1073,7 +1085,7 @@
       panel.textContent = receipt;
     }
 
-    setMessage('Withdrawal successful - collect cash', 'success');
+    setMessage(`Withdrawal successful! Your new balance is ${state.balances[state.userIndex]} Rupees`, 'success');
     playSuccessSound();
     speak('Withdrawal Successful!');
     showToast(`💵 Withdrawn ₹${amt.toLocaleString()} - Collect Cash!`, 'success', '💵');
@@ -1084,7 +1096,7 @@
   }
 
   /**
-   * 7. Transfer Money Screen (PIN required, matches ATM.py)
+   * 7. Transfer Money Screen (Direct execution with terminal receipt)
    */
   function openTransferScreen() {
     if (!requireLogin('transfer money')) return;
@@ -1122,7 +1134,7 @@
     state.activeInputTarget = recipientInput;
 
     form.addEventListener('submit', () => {
-      transferPinStep(recipientInput.value.trim().toLowerCase(), amountInput.value.trim());
+      doTransfer(recipientInput.value.trim().toLowerCase(), amountInput.value.trim());
     });
 
     document.getElementById('transfer-back-btn').addEventListener('click', () => {
@@ -1131,12 +1143,13 @@
     });
   }
 
-  function transferPinStep(recipient, amtVal) {
+  function doTransfer(recipient, amtVal) {
     playBeep();
     if (!state.users.includes(recipient)) {
       setMessage('Recipient not found', 'error');
       playErrorSound();
       speak('Recipient not found');
+      showToast('Recipient user not found', 'error', '⚠️');
       return;
     }
 
@@ -1144,6 +1157,7 @@
       setMessage('Cannot transfer to your own account', 'error');
       playErrorSound();
       speak('Cannot transfer to your own account. Please choose another account.');
+      showToast('Cannot transfer to your own account', 'error', '⚠️');
       return;
     }
 
@@ -1152,6 +1166,7 @@
       setMessage('Invalid amount. Must be multiple of 10.', 'error');
       playErrorSound();
       speak('Invalid transfer amount. Amount must be in multiples of 10.');
+      showToast('Transfer amount must be multiple of 10', 'error', '⚠️');
       return;
     }
 
@@ -1159,15 +1174,10 @@
       setMessage('Insufficient balance', 'error');
       playErrorSound();
       speak('Insufficient balance');
+      showToast('Insufficient balance for transfer', 'error', '⚠️');
       return;
     }
 
-    askPinAndContinue(() => {
-      doTransfer(recipient, amt);
-    });
-  }
-
-  function doTransfer(recipient, amt) {
     const recipientIndex = state.users.indexOf(recipient);
     state.balances[state.userIndex] -= amt;
     state.balances[recipientIndex] += amt;
@@ -1176,15 +1186,19 @@
     recordTransaction(state.currentUser, `Sent to ${recipient}`, amt, state.balances[state.userIndex]);
     recordTransaction(recipient, `Received from ${state.currentUser}`, amt, state.balances[recipientIndex]);
 
+    const ts = formatCurrentDateTime();
     const receipt = [
       "╔════════════════════════════════════╗",
       "║        TRANSFER RECEIPT            ║",
       "╠════════════════════════════════════╣",
+      `Date: ${ts}`,
       `From: ${state.currentUser}`,
       `To: ${recipient}`,
       `Amount: ${amt} Rupees`,
-      `New Balance: ${state.balances[state.userIndex]} Rupees`,
-      `Date: ${formatCurrentDateTime()}`,
+      `Your New Bal: ${state.balances[state.userIndex]} Rupees`,
+      `Recipient Bal: ${state.balances[recipientIndex]} Rupees`,
+      "╠════════════════════════════════════╣",
+      "Thank you for using our ATM!",
       "╚════════════════════════════════════╝"
     ].join('\n');
 
@@ -1194,20 +1208,19 @@
       panel.textContent = receipt;
     }
 
-    setMessage('Transfer successful', 'success');
+    setMessage(`Transfer successful! Sent ₹${amt} to ${recipient}. Your balance is ${state.balances[state.userIndex]} Rupees`, 'success');
     playSuccessSound();
     speak('Transfer successful.');
+    showToast(`↗️ Transferred ₹${amt.toLocaleString()} to ${recipient}!`, 'success', '↗️');
     ejectReceipt(receipt);
   }
 
   /**
-   * 8. Mini Statement Screen (PIN required + Statement Modal Popup)
+   * 8. Mini Statement Screen (Direct display with terminal receipt + popup)
    */
   function miniStatementWithPin() {
     if (!requireLogin('view your mini statement')) return;
-    askPinAndContinue(() => {
-      showMiniStatement();
-    });
+    showMiniStatement();
   }
 
   function showMiniStatement() {
