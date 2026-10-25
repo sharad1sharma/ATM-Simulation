@@ -88,7 +88,34 @@
     guideModalOverlay: document.getElementById('guide-modal-overlay'),
     guideModalClose: document.getElementById('guide-modal-close'),
     closeGuideBtn: document.getElementById('close-guide-btn'),
-    topLogoutBtn: document.getElementById('top-logout-btn')
+    topLogoutBtn: document.getElementById('top-logout-btn'),
+    // Balance Inquiry Modal
+    balanceModalOverlay: document.getElementById('balance-modal-overlay'),
+    balanceModalClose: document.getElementById('balance-modal-close'),
+    balModalUser: document.getElementById('bal-modal-user'),
+    balModalAmount: document.getElementById('bal-modal-amount'),
+    balModalReceipt: document.getElementById('bal-modal-receipt'),
+    balModalPrintBtn: document.getElementById('bal-modal-print-btn'),
+    balModalDoneBtn: document.getElementById('bal-modal-done-btn'),
+    // Statement Modal
+    statementModalOverlay: document.getElementById('statement-modal-overlay'),
+    statementModalClose: document.getElementById('statement-modal-close'),
+    stmtModalUser: document.getElementById('stmt-modal-user'),
+    stmtModalBal: document.getElementById('stmt-modal-bal'),
+    stmtModalContent: document.getElementById('stmt-modal-content'),
+    stmtModalPrintBtn: document.getElementById('stmt-modal-print-btn'),
+    stmtModalDoneBtn: document.getElementById('stmt-modal-done-btn'),
+    // Login Required Modal
+    loginReqModalOverlay: document.getElementById('login-required-modal-overlay'),
+    loginReqModalClose: document.getElementById('login-req-modal-close'),
+    loginReqActionText: document.getElementById('login-req-action-text'),
+    loginReqGoLogin: document.getElementById('login-req-go-login'),
+    loginReqGoReg: document.getElementById('login-req-go-reg'),
+    loginReqCancel: document.getElementById('login-req-cancel'),
+    // Floating Toast Notification
+    atmToast: document.getElementById('atm-toast'),
+    toastIcon: document.getElementById('toast-icon'),
+    toastMessage: document.getElementById('toast-message')
   };
 
   // ==========================================
@@ -775,15 +802,47 @@
     setMessage('Choose an action from the left');
   }
 
+  // ==========================================
+  // Animated Floating Toast Popup
+  // ==========================================
+  let toastTimerId = null;
+  function showToast(message, type = 'success', icon = '✨') {
+    if (!elements.atmToast) return;
+    elements.toastMessage.textContent = message;
+    elements.toastIcon.textContent = icon;
+    elements.atmToast.className = 'atm-toast show';
+    if (type === 'error') elements.atmToast.classList.add('error');
+    if (toastTimerId) clearTimeout(toastTimerId);
+    toastTimerId = setTimeout(() => {
+      if (elements.atmToast) elements.atmToast.classList.remove('show');
+    }, 3500);
+  }
+
+  // ==========================================
+  // Login Required Modal Popup (if action clicked without login)
+  // ==========================================
+  function requireLogin(actionName = 'perform this action') {
+    if (!state.currentUser) {
+      if (elements.loginReqActionText) {
+        elements.loginReqActionText.textContent = `Please login to ${actionName}`;
+      }
+      if (elements.loginReqModalOverlay) {
+        elements.loginReqModalOverlay.classList.add('active');
+      }
+      playErrorSound();
+      speak(`Please login first to ${actionName}`);
+      setMessage(`Please login first to ${actionName}`, 'error');
+      showToast(`Please login to ${actionName}`, 'error', '🔒');
+      return false;
+    }
+    return true;
+  }
+
   /**
-   * 4. Balance Screen (with PIN popup first)
+   * 4. Balance Screen (with PIN popup first + Balance Popup Modal)
    */
   function balanceWithPin() {
-    if (!state.currentUser) {
-      setMessage('Please login first', 'error');
-      playErrorSound();
-      return;
-    }
+    if (!requireLogin('check your balance')) return;
     askPinAndContinue(() => {
       showBalance();
     });
@@ -796,6 +855,7 @@
 
     const bal = state.balances[state.userIndex];
     recordTransaction(state.currentUser, 'Balance Check', '-', bal);
+    const receipt = generateReceipt(state.currentUser, 'Balance Check', '-', bal);
 
     const view = document.createElement('div');
     view.className = 'balance-view';
@@ -803,17 +863,27 @@
       <div class="balance-card">
         <div class="balance-label">Your current available balance is:</div>
         <div class="balance-amount">₹ ${bal.toLocaleString()} Rupees</div>
+        <div style="font-size: 0.85rem; color: var(--muted); margin-top: 8px;">Account Holder: ${state.currentUser.toUpperCase()}</div>
       </div>
       <div class="action-btn-row">
         <button class="secondary-btn" id="bal-back-btn">Back to Menu</button>
-        <button class="submit-btn" id="bal-receipt-btn">Print Receipt</button>
+        <button class="submit-btn" id="bal-receipt-btn">View / Print Receipt</button>
       </div>
     `;
 
     elements.screenContent.appendChild(view);
-    setMessage('Balance displayed');
+    setMessage('Balance displayed successfully', 'success');
     playSuccessSound();
     speak(`Your balance is ${bal} Rupees`);
+    showToast(`💰 Available Balance: ₹${bal.toLocaleString()}`, 'success', '💰');
+
+    // Pop up the dedicated Balance Modal
+    if (elements.balanceModalOverlay) {
+      elements.balModalUser.textContent = state.currentUser.toUpperCase();
+      elements.balModalAmount.textContent = `₹ ${bal.toLocaleString()} Rupees`;
+      elements.balModalReceipt.textContent = receipt;
+      elements.balanceModalOverlay.classList.add('active');
+    }
 
     document.getElementById('bal-back-btn').addEventListener('click', () => {
       playBeep();
@@ -822,8 +892,8 @@
 
     document.getElementById('bal-receipt-btn').addEventListener('click', () => {
       playBeep();
-      const receipt = generateReceipt(state.currentUser, 'Balance Check', '-', bal);
       ejectReceipt(receipt);
+      showReceiptModal(receipt);
     });
   }
 
@@ -831,11 +901,7 @@
    * 5. Deposit Screen (No extra PIN step, matches ATM.py)
    */
   function openDepositScreen() {
-    if (!state.currentUser) {
-      setMessage('Please login first', 'error');
-      playErrorSound();
-      return;
-    }
+    if (!requireLogin('deposit money')) return;
 
     state.currentScreen = 'deposit';
     clearScreen();
@@ -895,6 +961,7 @@
       setMessage('Invalid amount. Enter positive multiple of 10.', 'error');
       playErrorSound();
       speak('Deposit amount must be in multiples of 10.');
+      showToast('Invalid deposit amount. Must be multiple of 10.', 'error', '⚠️');
       return;
     }
 
@@ -912,6 +979,7 @@
     setMessage(`Deposit successful! Your new balance is ${state.balances[state.userIndex]} Rupees`, 'success');
     playSuccessSound();
     speak('Deposit Successful!');
+    showToast(`📥 Deposited ₹${amt.toLocaleString()} successfully!`, 'success', '📥');
     ejectReceipt(receipt);
   }
 
@@ -919,11 +987,7 @@
    * 6. Withdraw Screen (PIN required, matches ATM.py)
    */
   function openWithdrawScreen() {
-    if (!state.currentUser) {
-      setMessage('Please login first', 'error');
-      playErrorSound();
-      return;
-    }
+    if (!requireLogin('withdraw money')) return;
 
     state.currentScreen = 'withdraw';
     clearScreen();
@@ -981,12 +1045,14 @@
       setMessage('Invalid amount. Enter positive multiple of 10.', 'error');
       playErrorSound();
       speak('Withdrawal amount must be in multiples of 10.');
+      showToast('Amount must be positive multiple of 10', 'error', '⚠️');
       return;
     }
     if (amt > state.balances[state.userIndex]) {
       setMessage('Insufficient balance', 'error');
       playErrorSound();
       speak('Insufficient balance');
+      showToast('Insufficient balance for withdrawal', 'error', '⚠️');
       return;
     }
 
@@ -1010,6 +1076,7 @@
     setMessage('Withdrawal successful - collect cash', 'success');
     playSuccessSound();
     speak('Withdrawal Successful!');
+    showToast(`💵 Withdrawn ₹${amt.toLocaleString()} - Collect Cash!`, 'success', '💵');
 
     // Trigger physical hardware cash dispenser animation
     dispenseCash(amt);
@@ -1020,11 +1087,7 @@
    * 7. Transfer Money Screen (PIN required, matches ATM.py)
    */
   function openTransferScreen() {
-    if (!state.currentUser) {
-      setMessage('Please login first', 'error');
-      playErrorSound();
-      return;
-    }
+    if (!requireLogin('transfer money')) return;
 
     state.currentScreen = 'transfer';
     clearScreen();
@@ -1138,14 +1201,10 @@
   }
 
   /**
-   * 8. Mini Statement Screen (PIN required, matches ATM.py)
+   * 8. Mini Statement Screen (PIN required + Statement Modal Popup)
    */
   function miniStatementWithPin() {
-    if (!state.currentUser) {
-      setMessage('Please login first', 'error');
-      playErrorSound();
-      return;
-    }
+    if (!requireLogin('view your mini statement')) return;
     askPinAndContinue(() => {
       showMiniStatement();
     });
@@ -1157,24 +1216,16 @@
     setScreenTitle('Mini Statement');
 
     const history = state.history[state.currentUser] || [];
-    if (history.length === 0) {
-      const view = document.createElement('div');
-      view.style.padding = '40px 10px';
-      view.style.textAlign = 'center';
-      view.style.color = 'var(--muted)';
-      view.textContent = 'No recent transactions';
-      elements.screenContent.appendChild(view);
-      speak('You have no recent transactions');
-      return;
-    }
-
+    const bal = state.balances[state.userIndex];
     const receipt = [
       "╔═══════════════════════════════════════════════════════╗",
       "║               LAXMI CHIT FUND MINI STATEMENT          ║",
       "╠═══════════════════════════════════════════════════════╣",
-      ...history.slice().reverse(),
-      "╠═══════════════════════════════════════════════════════╣",
-      `Current Balance: ${state.balances[state.userIndex]} Rupees`,
+      `User: ${state.currentUser.toUpperCase()} | Date: ${formatCurrentDateTime()}`,
+      "-------------------------------------------------------",
+      ...(history.length === 0 ? ["No recent transactions"] : history.slice().reverse()),
+      "-------------------------------------------------------",
+      `Current Balance: ${bal.toLocaleString()} Rupees`,
       "╚═══════════════════════════════════════════════════════╝"
     ].join('\n');
 
@@ -1184,14 +1235,23 @@
       <div class="terminal-output" style="max-height: 240px;">${receipt}</div>
       <div class="action-btn-row">
         <button class="secondary-btn" id="stmt-back-btn">Back</button>
-        <button class="submit-btn" id="stmt-print-btn">Print Statement</button>
+        <button class="submit-btn" id="stmt-print-btn">View / Print Statement</button>
       </div>
     `;
 
     elements.screenContent.appendChild(view);
-    setMessage('Showing mini statement');
+    setMessage('Mini statement displayed successfully', 'success');
     playSuccessSound();
     speak('Displaying your recent transactions');
+    showToast('📋 Mini Statement Generated', 'success', '📋');
+
+    // Pop up the dedicated Mini Statement Modal
+    if (elements.statementModalOverlay) {
+      elements.stmtModalUser.textContent = state.currentUser.toUpperCase();
+      elements.stmtModalBal.textContent = `₹ ${bal.toLocaleString()}`;
+      elements.stmtModalContent.textContent = receipt;
+      elements.statementModalOverlay.classList.add('active');
+    }
 
     document.getElementById('stmt-back-btn').addEventListener('click', () => {
       playBeep();
@@ -1201,6 +1261,7 @@
     document.getElementById('stmt-print-btn').addEventListener('click', () => {
       playBeep();
       ejectReceipt(receipt);
+      showReceiptModal(receipt);
     });
   }
 
@@ -1208,11 +1269,7 @@
    * 9. Change PIN Screen
    */
   function openChangePinScreen() {
-    if (!state.currentUser) {
-      setMessage('Please login first', 'error');
-      playErrorSound();
-      return;
-    }
+    if (!requireLogin('change your PIN')) return;
 
     state.currentScreen = 'change-pin';
     clearScreen();
@@ -1268,6 +1325,7 @@
       feedback.style.color = 'var(--danger)';
       playErrorSound();
       speak('Incorrect current pin');
+      showToast('Incorrect current PIN', 'error', '⚠️');
       return;
     }
 
@@ -1276,6 +1334,7 @@
       feedback.style.color = 'var(--danger)';
       playErrorSound();
       speak('PIN must be of 4 digits.');
+      showToast('PIN must be exactly 4 digits', 'error', '⚠️');
       return;
     }
 
@@ -1284,6 +1343,7 @@
       feedback.style.color = 'var(--danger)';
       playErrorSound();
       speak("PIN doesn't match. Please try again.");
+      showToast('PIN confirmation did not match', 'error', '⚠️');
       return;
     }
 
@@ -1294,6 +1354,7 @@
     recordTransaction(state.currentUser, 'PIN Change', '-', state.balances[state.userIndex]);
     playSuccessSound();
     speak('Your PIN has been changed successfully.');
+    showToast('🔑 PIN Changed Successfully!', 'success', '🔑');
 
     setTimeout(() => {
       showAccountHome();
@@ -1575,6 +1636,68 @@
       elements.closeGuideBtn.addEventListener('click', () => {
         playBeep();
         elements.guideModalOverlay.classList.remove('active');
+      });
+    }
+
+    // Balance Modal Events
+    if (elements.balanceModalClose) {
+      elements.balanceModalClose.addEventListener('click', () => {
+        elements.balanceModalOverlay.classList.remove('active');
+      });
+    }
+    if (elements.balModalDoneBtn) {
+      elements.balModalDoneBtn.addEventListener('click', () => {
+        elements.balanceModalOverlay.classList.remove('active');
+      });
+    }
+    if (elements.balModalPrintBtn) {
+      elements.balModalPrintBtn.addEventListener('click', () => {
+        playBeep();
+        window.print();
+      });
+    }
+
+    // Statement Modal Events
+    if (elements.statementModalClose) {
+      elements.statementModalClose.addEventListener('click', () => {
+        elements.statementModalOverlay.classList.remove('active');
+      });
+    }
+    if (elements.stmtModalDoneBtn) {
+      elements.stmtModalDoneBtn.addEventListener('click', () => {
+        elements.statementModalOverlay.classList.remove('active');
+      });
+    }
+    if (elements.stmtModalPrintBtn) {
+      elements.stmtModalPrintBtn.addEventListener('click', () => {
+        playBeep();
+        window.print();
+      });
+    }
+
+    // Login Required Modal Events
+    if (elements.loginReqModalClose) {
+      elements.loginReqModalClose.addEventListener('click', () => {
+        elements.loginReqModalOverlay.classList.remove('active');
+      });
+    }
+    if (elements.loginReqCancel) {
+      elements.loginReqCancel.addEventListener('click', () => {
+        elements.loginReqModalOverlay.classList.remove('active');
+      });
+    }
+    if (elements.loginReqGoLogin) {
+      elements.loginReqGoLogin.addEventListener('click', () => {
+        playBeep();
+        elements.loginReqModalOverlay.classList.remove('active');
+        showLoginScreen();
+      });
+    }
+    if (elements.loginReqGoReg) {
+      elements.loginReqGoReg.addEventListener('click', () => {
+        playBeep();
+        elements.loginReqModalOverlay.classList.remove('active');
+        showRegisterScreen();
       });
     }
 

@@ -478,8 +478,7 @@ class ATMGUI:
     # Deposit flow (no extra PIN required - matches your original logic)
     # -----------------------
     def open_deposit_screen(self):
-        if not self.current_user:
-            self.set_message("Please login first", fg="#ff7b7b")
+        if not self.require_login("deposit money"):
             return
         self.clear_content()
         self.title_lbl.config(text="Deposit")
@@ -524,8 +523,7 @@ class ATMGUI:
     # Withdraw flow (PIN required)
     # -----------------------
     def open_withdraw_screen(self):
-        if not self.current_user:
-            self.set_message("Please login first", fg="#ff7b7b")
+        if not self.require_login("withdraw money"):
             return
         self.clear_content()
         self.title_lbl.config(text="Withdraw")
@@ -577,8 +575,7 @@ class ATMGUI:
     # Transfer Money (PIN required)
     # -----------------------
     def open_transfer_screen(self):
-        if not self.current_user:
-            self.set_message("Please login first", fg="#ff7b7b")
+        if not self.require_login("transfer money"):
             return
         self.clear_content()
         self.title_lbl.config(text="Transfer Money")
@@ -663,11 +660,51 @@ class ATMGUI:
         speak(f"Transfer successful.")
 
     # -----------------------
-    # Balance (PIN required)
+    # Helper: Require Login Popup
+    # -----------------------
+    def require_login(self, action_name="perform this action"):
+        if not self.current_user:
+            popup = tk.Toplevel(self.root)
+            popup.title("Authentication Required")
+            popup.geometry("360x170")
+            popup.configure(bg=self.panel_bg)
+            popup.resizable(False, False)
+            popup.transient(self.root)
+            popup.grab_set()
+
+            tk.Label(popup, text="⚠️ Authentication Required", bg=self.panel_bg, fg=self.accent,
+                     font=("Helvetica", 12, "bold")).pack(pady=(14, 4))
+            tk.Label(popup, text=f"Please login or register to {action_name}.", bg=self.panel_bg,
+                     fg=self.text_fg, font=("Helvetica", 10), justify="center").pack(pady=4)
+
+            btn_frame = tk.Frame(popup, bg=self.panel_bg)
+            btn_frame.pack(pady=12)
+
+            def go_login():
+                popup.destroy()
+                self.show_login_screen()
+
+            def go_reg():
+                popup.destroy()
+                self.show_register_screen()
+
+            tk.Button(btn_frame, text="Login Now", command=go_login, bg=self.accent, fg=self.bg_color,
+                      font=("Helvetica", 10, "bold"), bd=0, padx=12, pady=4).grid(row=0, column=0, padx=6)
+            tk.Button(btn_frame, text="Register New User", command=go_reg, bg=self.bg_color, fg=self.accent,
+                      font=("Helvetica", 10), bd=1, relief="ridge", padx=10, pady=4).grid(row=0, column=1, padx=6)
+            tk.Button(btn_frame, text="Cancel", command=popup.destroy, bg=self.bg_color, fg=self.muted,
+                      font=("Helvetica", 9), bd=0, padx=8, pady=4).grid(row=0, column=2, padx=6)
+
+            self.set_message(f"Please login first to {action_name}", fg="#ff7b7b")
+            speak(f"Please login first to {action_name}")
+            return False
+        return True
+
+    # -----------------------
+    # Balance (PIN required + Popup)
     # -----------------------
     def balance_with_pin(self):
-        if not self.current_user:
-            self.set_message("Please login first", fg="#ff7b7b")
+        if not self.require_login("check your balance"):
             return
         ask_pin_and_continue(self.root, self.user_index, pins, self.show_balance)
 
@@ -675,19 +712,57 @@ class ATMGUI:
         bal = balances[self.user_index]
         self.clear_content()
         self.title_lbl.config(text="Balance Inquiry")
-        lbl = tk.Label(self.content_area, text=f"Your balance is:\n\n{bal} Rupees",
-                       bg=self.screen_bg, fg=self.accent, font=("Helvetica", 20))
-        lbl.pack(pady=40)
+        
+        # Display on Main Screen
+        main_box = tk.Frame(self.content_area, bg=self.screen_bg)
+        main_box.pack(pady=20)
+        
+        lbl = tk.Label(main_box, text=f"Available Balance\n\n₹ {bal:,} Rupees",
+                       bg=self.screen_bg, fg=self.accent, font=("Helvetica", 20, "bold"))
+        lbl.pack(pady=10)
+
+        user_info = tk.Label(main_box, text=f"Account Holder: {self.current_user.upper()}",
+                             bg=self.screen_bg, fg=self.muted, font=("Helvetica", 10))
+        user_info.pack(pady=(0, 16))
+
+        btn_row = tk.Frame(main_box, bg=self.screen_bg)
+        btn_row.pack(pady=8)
+        tk.Button(btn_row, text="Back to Account Home", command=self.show_account_home,
+                  bg=self.bg_color, fg=self.accent, font=("Helvetica", 11), bd=1, relief="ridge", padx=12, pady=5).grid(row=0, column=0, padx=6)
+
         record_transaction(self.current_user, "Balance Check", "-", bal)
-        self.set_message("Balance displayed")
-        print(f"Your balance is {bal} Rupees")
+        receipt = generate_receipt(self.current_user, "Balance Check", "-", bal)
+
+        # Popup Window for Balance
+        popup = tk.Toplevel(self.root)
+        popup.title("Balance Receipt Popup")
+        popup.geometry("380x320")
+        popup.configure(bg=self.screen_bg)
+        popup.resizable(False, False)
+        popup.transient(self.root)
+        popup.grab_set()
+
+        tk.Label(popup, text="₹ Current Balance", bg=self.screen_bg, fg=self.accent,
+                 font=("Helvetica", 13, "bold")).pack(pady=(10, 4))
+        tk.Label(popup, text=f"₹ {bal:,} Rupees", bg=self.screen_bg, fg=self.accent,
+                 font=("Courier New", 18, "bold")).pack(pady=2)
+
+        txt = tk.Text(popup, height=8, bg="#021813", fg=self.accent, font=("Courier", 9))
+        txt.pack(fill="x", padx=14, pady=8)
+        txt.insert("end", receipt)
+        txt.config(state="disabled")
+
+        tk.Button(popup, text="Close / OK", command=popup.destroy, bg=self.accent, fg=self.bg_color,
+                  font=("Helvetica", 10, "bold"), bd=0, padx=16, pady=4).pack(pady=(4, 10))
+
+        self.set_message("Balance displayed successfully!", fg=self.accent)
+        speak(f"Your balance is {bal} Rupees")
 
     # -----------------------
-    # Mini statement (PIN required)
+    # Mini statement (PIN required + Popup)
     # -----------------------
     def mini_with_pin(self):
-        if not self.current_user:
-            self.set_message("Please login first", fg="#ff7b7b")
+        if not self.require_login("view your mini statement"):
             return
         ask_pin_and_continue(self.root, self.user_index, pins, self.show_mini_statement)
 
@@ -695,25 +770,65 @@ class ATMGUI:
         history = transaction_history.get(self.current_user, [])
         self.clear_content()
         self.title_lbl.config(text="Mini Statement")
+
+        statement_lines = [
+            "╔═══════════════════════════════════════════╗",
+            "║        LAXMI CHIT FUND MINI STATEMENT     ║",
+            "╠═══════════════════════════════════════════╣",
+            f"User: {self.current_user}",
+            f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+            "-------------------------------------------"
+        ]
         if not history:
-            no = tk.Label(self.content_area, text="No recent transactions", bg=self.screen_bg, fg=self.muted)
-            no.pack(pady=40)
-            speak("You have no recent transactions")
-            return
-        txt = tk.Text(self.content_area, height=14, bg="#021813", fg=self.accent, font=("Courier", 10))
-        txt.pack(fill="both", expand=True, padx=12, pady=12)
-        for line in reversed(history):
-            txt.insert("end", line + "\n")
+            statement_lines.append("No recent transactions found.")
+        else:
+            for line in reversed(history):
+                statement_lines.append(line)
+        statement_lines.extend([
+            "-------------------------------------------",
+            f"Current Balance: {balances[self.user_index]} Rupees",
+            "╚═══════════════════════════════════════════╝"
+        ])
+        statement_text = "\n".join(statement_lines)
+
+        # Main Screen view
+        txt = tk.Text(self.content_area, height=12, bg="#021813", fg=self.accent, font=("Courier", 10))
+        txt.pack(fill="both", expand=True, padx=12, pady=10)
+        txt.insert("end", statement_text)
         txt.config(state="disabled")
-        self.set_message("Showing mini statement")
+
+        back_btn = tk.Button(self.content_area, text="Back to Account Home", command=self.show_account_home,
+                             bg=self.bg_color, fg=self.accent, font=("Helvetica", 10), bd=1, relief="ridge", padx=12, pady=4)
+        back_btn.pack(pady=(0, 8))
+
+        # Popup Window for Mini Statement
+        popup = tk.Toplevel(self.root)
+        popup.title("Mini Statement Popup")
+        popup.geometry("450x360")
+        popup.configure(bg=self.screen_bg)
+        popup.resizable(False, False)
+        popup.transient(self.root)
+        popup.grab_set()
+
+        tk.Label(popup, text="📋 Mini Statement Receipt", bg=self.screen_bg, fg=self.accent,
+                 font=("Helvetica", 12, "bold")).pack(pady=(8, 4))
+
+        pop_txt = tk.Text(popup, height=12, bg="#021813", fg=self.accent, font=("Courier", 9))
+        pop_txt.pack(fill="both", expand=True, padx=12, pady=6)
+        pop_txt.insert("end", statement_text)
+        pop_txt.config(state="disabled")
+
+        tk.Button(popup, text="Close / OK", command=popup.destroy, bg=self.accent, fg=self.bg_color,
+                  font=("Helvetica", 10, "bold"), bd=0, padx=16, pady=4).pack(pady=(4, 8))
+
+        self.set_message("Showing mini statement", fg=self.accent)
         speak("Displaying your recent transactions")
 
     # -----------------------
     # Change PIN (secure version)
     # -----------------------
     def open_change_pin_screen(self):
-        if not self.current_user:
-            self.set_message("Please login first", fg="#ff7b7b")
+        if not self.require_login("change your PIN"):
             return
         self.clear_content()
         self.title_lbl.config(text="Change PIN")

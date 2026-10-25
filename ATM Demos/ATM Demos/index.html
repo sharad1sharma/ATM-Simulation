@@ -299,6 +299,77 @@
     </div>
   </div>
 
+  <!-- Modal: Balance Inquiry Popup -->
+  <div class="modal-overlay" id="balance-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="balance-modal-title">
+    <div class="modal-box balance-modal-box">
+      <div class="modal-header">
+        <span class="modal-title" id="balance-modal-title">💰 Balance Inquiry</span>
+        <button class="modal-close-btn" id="balance-modal-close" aria-label="Close balance modal">&times;</button>
+      </div>
+      <div class="modal-body" style="text-align: center;">
+        <div style="font-size: 0.9rem; color: var(--muted); margin-bottom: 4px;">Account Holder: <b id="bal-modal-user" style="color: var(--text-fg);">USER1</b></div>
+        <div style="font-size: 1.1rem; color: var(--text-fg); margin-bottom: 8px;">Available Balance</div>
+        <div class="modal-balance-display" id="bal-modal-amount">₹ 860 Rupees</div>
+        <div class="receipt-paper" id="bal-modal-receipt" style="margin-top: 12px; max-height: 140px; text-align: left;"></div>
+        <div class="modal-actions" style="margin-top: 14px;">
+          <button class="modal-btn modal-submit-btn" id="bal-modal-print-btn">🖨 Print Receipt</button>
+          <button class="modal-btn modal-cancel-btn" id="bal-modal-done-btn">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Mini Statement Popup -->
+  <div class="modal-overlay" id="statement-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="statement-modal-title">
+    <div class="modal-box statement-modal-box">
+      <div class="modal-header">
+        <span class="modal-title" id="statement-modal-title">📋 Mini Statement</span>
+        <button class="modal-close-btn" id="statement-modal-close" aria-label="Close statement modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--muted); margin-bottom: 6px;">
+          <span>Account: <b id="stmt-modal-user" style="color: var(--text-fg);">USER1</b></span>
+          <span>Balance: <b id="stmt-modal-bal" style="color: var(--accent);">₹ 860</b></span>
+        </div>
+        <div class="receipt-paper" id="stmt-modal-content" style="max-height: 220px;"></div>
+        <div class="modal-actions" style="margin-top: 12px;">
+          <button class="modal-btn modal-submit-btn" id="stmt-modal-print-btn">🖨 Print Statement</button>
+          <button class="modal-btn modal-cancel-btn" id="stmt-modal-done-btn">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Login Required Popup (when clicking actions without being logged in) -->
+  <div class="modal-overlay" id="login-required-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="login-req-modal-title">
+    <div class="modal-box login-req-modal-box">
+      <div class="modal-header">
+        <span class="modal-title" id="login-req-modal-title">⚠️ Authentication Required</span>
+        <button class="modal-close-btn" id="login-req-modal-close" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body" style="text-align: center;">
+        <div style="font-size: 2.2rem; margin-bottom: 6px;">🔒</div>
+        <div style="font-size: 1.05rem; font-weight: 600; color: var(--text-fg); margin-bottom: 6px;" id="login-req-action-text">
+          Please login to perform this action
+        </div>
+        <div style="font-size: 0.85rem; color: var(--muted); margin-bottom: 14px;">
+          To check your balance, withdraw, deposit, or view statements, please login with your card & PIN or register a new user.
+        </div>
+        <div class="modal-actions" style="flex-wrap: wrap; gap: 8px;">
+          <button class="modal-btn modal-submit-btn" id="login-req-go-login">Login Now</button>
+          <button class="modal-btn secondary-btn" id="login-req-go-reg" style="border-color: var(--accent);">Register New User</button>
+          <button class="modal-btn modal-cancel-btn" id="login-req-cancel">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Animated Action Toast Notification -->
+  <div class="atm-toast" id="atm-toast">
+    <span class="toast-icon" id="toast-icon">✨</span>
+    <span class="toast-message" id="toast-message">Action Successful</span>
+  </div>
+
   <!-- Responsive Mobile Menu Drawer Toggle -->
   <button class="mobile-drawer-btn" id="mobile-drawer-btn" aria-label="Toggle ATM Actions Menu">
     <span class="hamburger-line"></span>

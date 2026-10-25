@@ -1545,3 +1545,72 @@ html, body {
   color: #ffffff;
 }
 
+/* ==========================================================================
+   Balance, Statement & Login Required Modals
+   ========================================================================== */
+.balance-modal-box {
+  max-width: 440px;
+}
+
+.modal-balance-display {
+  font-family: var(--font-mono);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-shadow: 0 0 12px rgba(0, 255, 127, 0.5);
+  background: rgba(2, 24, 19, 0.9);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  padding: 10px 18px;
+  letter-spacing: 1px;
+}
+
+.statement-modal-box {
+  max-width: 520px;
+}
+
+.login-req-modal-box {
+  max-width: 420px;
+}
+
+/* Floating Action Toast Notification */
+.atm-toast {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-100px);
+  background: rgba(7, 32, 34, 0.95);
+  border: 1px solid var(--accent);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(0, 255, 127, 0.4);
+  backdrop-filter: blur(8px);
+  border-radius: 8px;
+  padding: 10px 22px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 1000;
+  color: var(--text-fg);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 600;
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
+}
+
+.atm-toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.atm-toast.error {
+  border-color: var(--danger);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(255, 102, 102, 0.4);
+}
+
+.atm-toast.error .toast-message {
+  color: var(--danger);
+}
+
+
