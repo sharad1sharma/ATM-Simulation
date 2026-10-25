@@ -1,0 +1,1547 @@
+/* ==========================================================================
+   Laxmi Chit Fund ATM - Premium Responsive Stylesheet
+   Theme: Authentic Dark Navy & Neon Green ATM CRT Terminal
+   ========================================================================== */
+
+:root {
+  /* Exact Color Palette from Reference Screenshot & ATM.py */
+  --bg-color: #0b1d2b;       /* Dark Navy Background */
+  --screen-bg: #072022;      /* Deep Green-Teal CRT Screen */
+  --panel-bg: #0f2733;       /* Left Sidebar Panel Background */
+  --accent: #00ff7f;         /* Neon ATM Spring Green */
+  --accent-hover: #1eff8e;
+  --accent-dim: rgba(0, 255, 127, 0.15);
+  --accent-glow: 0 0 12px rgba(0, 255, 127, 0.45);
+  --btn-active-bg: #0b2f22;  /* Active button background */
+  --text-fg: #e6ffee;        /* Crisp Off-White / Mint */
+  --muted: #8fb3a6;          /* Muted Slate / Teal */
+  --danger: #ff6666;         /* Error text */
+  --danger-bg: rgba(255, 102, 102, 0.12);
+  --terminal-bg: #021813;    /* Receipts and Console box background */
+  --border-color: #1a4d40;   /* CRT Inset Ridge Border */
+  --kiosk-metal: #121c24;
+  --kiosk-bezel: #1b2832;
+
+  /* Typography */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'Share Tech Mono', 'Courier Prime', 'Courier New', monospace;
+
+  /* Elevation & Transitions */
+  --transition-fast: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Base Reset & Box Sizing */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #06111a;
+  color: var(--text-fg);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Ambient Radial Glow */
+.ambient-glow {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 900px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(0, 255, 127, 0.08) 0%, rgba(11, 29, 43, 0) 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ==========================================================================
+   Top Navigation Utility Bar
+   ========================================================================== */
+.top-nav-bar {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 24px;
+  background: rgba(15, 39, 51, 0.85);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 255, 127, 0.2);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.brand-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.live-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  animation: pulse-dot 2s infinite ease-in-out;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.brand-name {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  letter-spacing: 1.5px;
+  color: var(--accent);
+  font-weight: 700;
+  text-shadow: 0 0 6px rgba(0, 255, 127, 0.3);
+}
+
+.top-controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.quick-demo-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-color);
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 255, 127, 0.25);
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.quick-demo-pill select {
+  background: #072022;
+  color: var(--accent);
+  border: 1px solid rgba(0, 255, 127, 0.4);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  outline: none;
+}
+
+.quick-demo-pill select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 6px var(--accent-dim);
+}
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-color);
+  color: var(--accent);
+  border: 1px solid rgba(0, 255, 127, 0.3);
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.nav-btn:hover {
+  background: var(--btn-active-bg);
+  border-color: var(--accent);
+  box-shadow: 0 0 8px rgba(0, 255, 127, 0.2);
+}
+
+.inactivity-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #072022;
+  border: 1px solid rgba(0, 255, 127, 0.3);
+  color: var(--accent);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+.inactivity-badge.warning {
+  border-color: var(--danger);
+  color: var(--danger);
+  animation: blink-warning 1s infinite;
+}
+
+@keyframes blink-warning {
+  50% { opacity: 0.5; }
+}
+
+/* ==========================================================================
+   Outer ATM Machine Wrapper & Bezel
+   ========================================================================== */
+.atm-outer-wrapper {
+  position: relative;
+  z-index: 1;
+  max-width: 960px;
+  margin: 28px auto 60px auto;
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: max-width 0.3s ease;
+}
+
+/* In Kiosk mode, enlarge container to accommodate peripherals */
+.atm-outer-wrapper.kiosk-mode {
+  max-width: 1040px;
+}
+
+.kiosk-top-sign {
+  display: none;
+  width: 100%;
+  background: linear-gradient(180deg, #182833 0%, #0d1a24 100%);
+  border: 2px solid #23443b;
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
+  padding: 12px 24px;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.atm-outer-wrapper.kiosk-mode .kiosk-top-sign {
+  display: flex;
+}
+
+.sign-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #072022;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 1.3rem;
+  box-shadow: 0 0 12px var(--accent);
+}
+
+.sign-text {
+  font-family: var(--font-mono);
+  font-size: 1.15rem;
+  letter-spacing: 3px;
+  color: var(--accent);
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(0, 255, 127, 0.5);
+}
+
+/* ==========================================================================
+   ATM Window Container (Exact Screenshot Representation)
+   ========================================================================== */
+.atm-window {
+  width: 100%;
+  background-color: var(--bg-color);
+  border-radius: 8px;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(0, 255, 127, 0.15);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #143542;
+}
+
+.atm-outer-wrapper.kiosk-mode .atm-window {
+  border-radius: 0;
+  border-left: 2px solid #23443b;
+  border-right: 2px solid #23443b;
+}
+
+/* Windows / Tkinter Window Titlebar */
+.window-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  color: #1a1a1a;
+  height: 30px;
+  padding: 0 10px;
+  font-size: 0.8rem;
+  user-select: none;
+  border-bottom: 1px solid #cccccc;
+}
+
+.titlebar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-icon {
+  font-size: 0.9rem;
+}
+
+.titlebar-title {
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #1a1a1a;
+}
+
+.titlebar-controls {
+  display: flex;
+  align-items: center;
+}
+
+.win-btn {
+  background: transparent;
+  border: none;
+  width: 44px;
+  height: 29px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #333333;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.win-btn:hover {
+  background-color: #e5e5e5;
+}
+
+.win-close:hover {
+  background-color: #e81123;
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   Window Body: Left Sidebar + Right Screen
+   ========================================================================== */
+.window-body {
+  display: flex;
+  min-height: 520px;
+  background-color: var(--bg-color);
+  position: relative;
+}
+
+/* --- Left Sidebar Panel --- */
+.sidebar-panel {
+  width: 250px;
+  flex-shrink: 0;
+  background-color: var(--panel-bg);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px 14px 14px 14px;
+  border-right: 1px solid rgba(0, 0, 0, 0.4);
+}
+
+.logo-area {
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.atm-logo {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 1.25rem;
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  color: var(--accent);
+  text-shadow: 0 0 5px rgba(0, 255, 127, 0.35);
+  margin: 0;
+}
+
+.action-buttons-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-grow: 1;
+}
+
+.atm-action-btn {
+  width: 100%;
+  background-color: var(--bg-color);
+  color: var(--accent);
+  border: 1px solid transparent;
+  padding: 8px 12px;
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  border-radius: 4px;
+  transition: var(--transition-fast);
+  outline: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.atm-action-btn:hover {
+  background-color: var(--btn-active-bg);
+  border-color: rgba(0, 255, 127, 0.4);
+  box-shadow: 0 0 8px rgba(0, 255, 127, 0.25);
+  transform: translateY(-1px);
+}
+
+.atm-action-btn:active,
+.atm-action-btn.active {
+  background-color: #0d3829;
+  border-color: var(--accent);
+  transform: translateY(1px);
+}
+
+.status-footer {
+  margin-top: 14px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-align: center;
+  font-family: var(--font-sans);
+  padding: 6px 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  letter-spacing: 0.2px;
+}
+
+/* --- Right Screen Panel --- */
+.screen-panel {
+  flex-grow: 1;
+  background-color: var(--screen-bg);
+  padding: 16px;
+  display: flex;
+}
+
+.crt-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: var(--screen-bg);
+  border: 2px solid var(--border-color);
+  border-radius: 4px;
+  box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.7), 0 0 10px rgba(0, 255, 127, 0.08);
+  display: flex;
+  flex-direction: column;
+  padding: 14px 18px;
+  overflow: hidden;
+}
+
+/* Faint scanline overlay */
+.crt-scanline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.2) 50%
+  ), linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.02),
+    rgba(0, 255, 0, 0.01),
+    rgba(0, 0, 255, 0.02)
+  );
+  background-size: 100% 3px, 6px 100%;
+  pointer-events: none;
+  opacity: 0.55;
+  z-index: 5;
+}
+
+/* Screen Top Bar */
+.screen-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(0, 255, 127, 0.15);
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.screen-title {
+  color: var(--accent);
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-family: var(--font-sans);
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 6px rgba(0, 255, 127, 0.3);
+}
+
+.screen-clock {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.92rem;
+  letter-spacing: 1px;
+}
+
+/* Dynamic Screen Content Container */
+.screen-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 2;
+  overflow-y: auto;
+}
+
+/* Bottom Message Bar */
+.screen-message-bar {
+  min-height: 24px;
+  padding: 4px 8px;
+  font-size: 0.88rem;
+  text-align: center;
+  color: var(--text-fg);
+  font-family: var(--font-sans);
+  transition: var(--transition-fast);
+  z-index: 2;
+}
+
+.screen-message-bar.error {
+  color: var(--danger);
+  background: var(--danger-bg);
+  border-radius: 4px;
+}
+
+.screen-message-bar.success {
+  color: var(--accent);
+}
+
+/* ==========================================================================
+   Screen Content Layouts (Matches Screens in ATM.py)
+   ========================================================================== */
+
+/* 1. Welcome Screen (Default) */
+.welcome-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+  text-align: center;
+  gap: 22px;
+  padding: 30px 10px;
+}
+
+.welcome-prompt {
+  font-size: 1.35rem;
+  color: var(--text-fg);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.start-btn {
+  background-color: var(--accent);
+  color: var(--bg-color);
+  border: none;
+  font-size: 1.1rem;
+  font-weight: 700;
+  padding: 10px 32px;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 255, 127, 0.4);
+  transition: var(--transition-fast);
+}
+
+.start-btn:hover {
+  background-color: var(--accent-hover);
+  box-shadow: 0 6px 20px rgba(0, 255, 127, 0.6);
+  transform: translateY(-2px);
+}
+
+.start-btn:active {
+  transform: translateY(0);
+}
+
+.welcome-card-hint {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+/* 2. Login Screen */
+.login-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+  padding: 20px 0;
+}
+
+.form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 320px;
+  background: rgba(11, 29, 43, 0.5);
+  padding: 22px 24px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 255, 127, 0.15);
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-label {
+  font-size: 0.88rem;
+  color: var(--text-fg);
+}
+
+.atm-input {
+  background: #021813;
+  border: 1px solid rgba(0, 255, 127, 0.3);
+  color: var(--accent);
+  padding: 8px 12px;
+  font-size: 1rem;
+  font-family: var(--font-mono);
+  border-radius: 4px;
+  outline: none;
+  transition: var(--transition-fast);
+  width: 100%;
+}
+
+.atm-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 10px rgba(0, 255, 127, 0.3);
+}
+
+.submit-btn {
+  background-color: var(--accent);
+  color: var(--bg-color);
+  border: none;
+  padding: 9px 18px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  box-shadow: 0 3px 10px rgba(0, 255, 127, 0.35);
+  margin-top: 6px;
+}
+
+.submit-btn:hover {
+  background-color: var(--accent-hover);
+  box-shadow: 0 4px 14px rgba(0, 255, 127, 0.5);
+}
+
+.secondary-btn {
+  background-color: var(--bg-color);
+  color: var(--accent);
+  border: 1px solid rgba(0, 255, 127, 0.3);
+  padding: 8px 16px;
+  font-size: 0.92rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.secondary-btn:hover {
+  background-color: var(--btn-active-bg);
+  border-color: var(--accent);
+}
+
+.login-feedback {
+  margin-top: 12px;
+  font-size: 0.86rem;
+  min-height: 20px;
+  text-align: center;
+}
+
+/* 3. Account Home Screen */
+.account-home-view {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.account-top-shortcuts {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.greeting-banner {
+  text-align: center;
+  padding: 12px;
+}
+
+.greeting-text {
+  font-size: 1.4rem;
+  color: var(--text-fg);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.account-tier {
+  font-size: 0.84rem;
+  color: var(--accent);
+  letter-spacing: 1px;
+}
+
+.recent-activity-card {
+  background: rgba(2, 24, 19, 0.8);
+  border: 1px solid rgba(0, 255, 127, 0.2);
+  border-radius: 6px;
+  padding: 14px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  max-height: 240px;
+}
+
+.activity-header {
+  font-size: 0.88rem;
+  color: var(--muted);
+  font-weight: 600;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 255, 127, 0.1);
+  padding-bottom: 4px;
+}
+
+.transaction-list {
+  list-style: none;
+  overflow-y: auto;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.transaction-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 6px;
+  border-radius: 4px;
+  background: rgba(11, 29, 43, 0.4);
+  color: var(--text-fg);
+}
+
+.transaction-item .t-type {
+  color: var(--accent);
+}
+
+.transaction-item .t-date {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+/* 4. Balance Display View */
+.balance-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+  text-align: center;
+  gap: 20px;
+  padding: 24px 0;
+}
+
+.balance-card {
+  background: rgba(2, 24, 19, 0.85);
+  border: 1px solid var(--accent);
+  box-shadow: 0 0 20px rgba(0, 255, 127, 0.2);
+  padding: 28px 48px;
+  border-radius: 8px;
+}
+
+.balance-label {
+  font-size: 1.1rem;
+  color: var(--text-fg);
+  margin-bottom: 10px;
+}
+
+.balance-amount {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px rgba(0, 255, 127, 0.4);
+}
+
+/* 5. Deposit & Withdraw Views */
+.action-screen-view {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  gap: 14px;
+}
+
+.quick-amount-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.amount-chip {
+  background: var(--bg-color);
+  border: 1px solid rgba(0, 255, 127, 0.3);
+  color: var(--accent);
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.amount-chip:hover {
+  background: var(--btn-active-bg);
+  border-color: var(--accent);
+}
+
+.action-btn-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* Terminal Output Panel (for Receipts & Mini Statement) */
+.terminal-output {
+  background-color: var(--terminal-bg);
+  color: var(--accent);
+  border: 1px solid rgba(0, 255, 127, 0.3);
+  border-radius: 4px;
+  padding: 12px 14px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  max-height: 180px;
+  overflow-y: auto;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.7);
+}
+
+/* ==========================================================================
+   Kiosk Physical Peripherals Section (Kiosk View)
+   ========================================================================== */
+.kiosk-peripherals {
+  display: none;
+  width: 100%;
+  background: linear-gradient(180deg, #101920 0%, #0c141a 100%);
+  border: 2px solid #23443b;
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  padding: 24px 20px;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 18px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.75);
+}
+
+.atm-outer-wrapper.kiosk-mode .kiosk-peripherals {
+  display: grid;
+}
+
+.peripheral-module {
+  background: #14222c;
+  border: 1px solid #1f3744;
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.module-label {
+  font-size: 0.72rem;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.slot-status {
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+}
+
+/* Card Slot & Virtual Debit Card */
+.card-slot-wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.card-slot-opening {
+  width: 140px;
+  height: 12px;
+  background: #020609;
+  border-radius: 4px;
+  border: 2px solid #2b4554;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slot-light {
+  width: 100px;
+  height: 3px;
+  background-color: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  animation: slot-glow 1.5s infinite alternate ease-in-out;
+}
+
+@keyframes slot-glow {
+  0% { opacity: 0.2; }
+  100% { opacity: 1; }
+}
+
+.virtual-atm-card {
+  width: 140px;
+  height: 85px;
+  background: linear-gradient(135deg, #1f4037 0%, #0b1d2b 100%);
+  border: 1px solid rgba(0, 255, 127, 0.5);
+  border-radius: 6px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  user-select: none;
+}
+
+.virtual-atm-card:hover {
+  transform: translateY(-4px) scale(1.03);
+  border-color: var(--accent);
+}
+
+.virtual-atm-card.inserted {
+  transform: translateY(-38px) scale(0.65);
+  opacity: 0.3;
+}
+
+.card-chip {
+  width: 18px;
+  height: 14px;
+  background: #e6b800;
+  border-radius: 2px;
+}
+
+.card-brand {
+  font-size: 0.62rem;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.card-number {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  color: #ffffff;
+  letter-spacing: 1px;
+}
+
+.card-holder {
+  font-size: 0.62rem;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* Cash Dispenser Opening & Notes Stack */
+.cash-slot-opening {
+  width: 150px;
+  height: 16px;
+  background: #020609;
+  border: 2px solid #2b4554;
+  border-radius: 4px;
+  position: relative;
+  overflow: visible;
+  display: flex;
+  justify-content: center;
+}
+
+.cash-notes-stack {
+  position: absolute;
+  top: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 10;
+}
+
+.cash-notes-stack.dispensing {
+  display: flex;
+  animation: dispense-cash 1.2s forwards ease-out;
+}
+
+@keyframes dispense-cash {
+  0% { transform: translateY(0); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateY(-42px); opacity: 1; }
+}
+
+.rupee-note {
+  width: 120px;
+  height: 48px;
+  background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+  border: 1px solid #81c784;
+  border-radius: 4px;
+  color: #e8f5e9;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  margin-top: -38px;
+}
+
+.rupee-note.note-1 { margin-top: 0; }
+.rupee-note.note-2 { transform: rotate(2deg); }
+.rupee-note.note-3 { transform: rotate(-3deg); }
+
+/* Receipt Slot & Paper */
+.receipt-slot-opening {
+  width: 130px;
+  height: 10px;
+  background: #020609;
+  border: 2px solid #2b4554;
+  border-radius: 4px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  overflow: visible;
+}
+
+.printed-receipt-paper {
+  position: absolute;
+  top: 10px;
+  width: 100px;
+  height: 60px;
+  background: #fffdf5;
+  color: #1a1a1a;
+  border: 1px dashed #bbb;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  cursor: pointer;
+  transform: translateY(-70px);
+  opacity: 0;
+  transition: transform 0.5s ease-out, opacity 0.3s ease;
+}
+
+.printed-receipt-paper.printed {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Hardware Keypad */
+.atm-keypad-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  width: 100%;
+}
+
+.keypad-btn {
+  background: linear-gradient(180deg, #1b2832 0%, #101c24 100%);
+  border: 1px solid #294050;
+  color: var(--text-fg);
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 8px 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  transition: var(--transition-fast);
+}
+
+.keypad-btn:hover {
+  background: #253947;
+  border-color: var(--accent);
+}
+
+.keypad-btn:active {
+  transform: translateY(1px);
+  background: #0d171e;
+}
+
+.keypad-btn.key-cancel {
+  background: #4a1515;
+  color: #ff9999;
+  font-size: 0.68rem;
+}
+.keypad-btn.key-clear {
+  background: #4d3d14;
+  color: #ffe082;
+  font-size: 0.68rem;
+}
+.keypad-btn.key-enter {
+  background: #14432a;
+  color: var(--accent);
+  font-size: 0.68rem;
+}
+.keypad-btn.key-help {
+  background: #1f3744;
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+.keypad-btn.key-blank {
+  visibility: hidden;
+}
+
+/* ==========================================================================
+   Modals (PIN Verification & Receipt Viewer)
+   ========================================================================== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(4, 12, 18, 0.75);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal-box {
+  background: var(--panel-bg);
+  border: 2px solid var(--accent);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(0, 255, 127, 0.35);
+  border-radius: 8px;
+  width: 100%;
+  max-width: 340px;
+  overflow: hidden;
+  animation: modal-pop 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modal-pop {
+  0% { transform: scale(0.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.modal-header {
+  background: var(--bg-color);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(0, 255, 127, 0.2);
+}
+
+.modal-title {
+  color: var(--accent);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.modal-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 1.2rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.modal-close-btn:hover {
+  color: #ffffff;
+}
+
+.modal-body {
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal-label {
+  font-size: 0.92rem;
+  color: var(--text-fg);
+  text-align: center;
+}
+
+.pin-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.pin-input-wrap input {
+  width: 100%;
+  background: #021813;
+  border: 1px solid rgba(0, 255, 127, 0.4);
+  color: var(--accent);
+  text-align: center;
+  font-size: 1.4rem;
+  letter-spacing: 6px;
+  font-family: var(--font-mono);
+  padding: 8px 36px 8px 12px;
+  border-radius: 4px;
+  outline: none;
+}
+
+.pin-input-wrap input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 10px rgba(0, 255, 127, 0.4);
+}
+
+.toggle-pin-visibility {
+  position: absolute;
+  right: 10px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: var(--muted);
+}
+
+.modal-feedback {
+  font-size: 0.85rem;
+  color: var(--danger);
+  min-height: 18px;
+  text-align: center;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.modal-btn {
+  padding: 7px 18px;
+  font-size: 0.88rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.modal-submit-btn {
+  background: var(--accent);
+  color: var(--bg-color);
+  font-weight: 700;
+  border: none;
+}
+
+.modal-submit-btn:hover {
+  background: var(--accent-hover);
+}
+
+.modal-cancel-btn {
+  background: var(--bg-color);
+  color: var(--accent);
+  border: 1px solid rgba(0, 255, 127, 0.3);
+}
+
+.modal-cancel-btn:hover {
+  background: var(--btn-active-bg);
+}
+
+/* Receipt Modal Box */
+.receipt-modal-box {
+  max-width: 420px;
+}
+
+.receipt-paper {
+  background: #021813;
+  color: var(--accent);
+  border: 1px dashed rgba(0, 255, 127, 0.4);
+  padding: 14px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  border-radius: 4px;
+}
+
+/* Mobile Menu Hamburger Button */
+.mobile-drawer-btn {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: none;
+  box-shadow: 0 4px 15px rgba(0, 255, 127, 0.4);
+  cursor: pointer;
+  z-index: 90;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hamburger-line {
+  width: 22px;
+  height: 2px;
+  background-color: var(--bg-color);
+  border-radius: 2px;
+  transition: var(--transition-fast);
+}
+
+/* ==========================================================================
+   Responsive Adaptations
+   ========================================================================== */
+@media (max-width: 860px) {
+  .atm-outer-wrapper {
+    margin: 12px auto 40px auto;
+    padding: 0 8px;
+  }
+
+  .window-body {
+    flex-direction: column;
+  }
+
+  .sidebar-panel {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid rgba(0, 255, 127, 0.15);
+    padding: 12px 14px;
+  }
+
+  .logo-area {
+    margin-bottom: 10px;
+  }
+
+  .action-buttons-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 8px;
+  }
+
+  .atm-action-btn {
+    font-size: 0.85rem;
+    padding: 7px 6px;
+  }
+
+  .status-footer {
+    margin-top: 10px;
+  }
+
+  .screen-panel {
+    padding: 10px;
+    min-height: 380px;
+  }
+
+  .crt-screen {
+    padding: 12px;
+  }
+
+  .screen-title {
+    font-size: 1.05rem;
+  }
+
+  .balance-card {
+    padding: 20px 24px;
+  }
+
+  .balance-amount {
+    font-size: 1.7rem;
+  }
+
+  .top-nav-bar {
+    padding: 8px 12px;
+  }
+
+  .brand-name {
+    font-size: 0.82rem;
+  }
+}
+
+@media (max-width: 500px) {
+  .action-buttons-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .top-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .quick-demo-pill {
+    width: 100%;
+  }
+
+  .quick-demo-pill select {
+    flex-grow: 1;
+  }
+}
+
+/* ==========================================================================
+   Guide Modal & Registration Views
+   ========================================================================== */
+.guide-modal-box {
+  max-width: 480px;
+}
+
+.guide-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.guide-step {
+  display: flex;
+  gap: 12px;
+  background: rgba(11, 29, 43, 0.6);
+  border: 1px solid rgba(0, 255, 127, 0.2);
+  border-radius: 6px;
+  padding: 10px 12px;
+  align-items: flex-start;
+}
+
+.step-num {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--bg-color);
+  font-weight: 700;
+  font-family: var(--font-mono);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  box-shadow: 0 0 8px rgba(0, 255, 127, 0.4);
+}
+
+.step-content {
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.step-content strong {
+  display: block;
+  color: var(--accent);
+  margin-bottom: 2px;
+}
+
+.step-content p {
+  color: var(--text-fg);
+  margin: 0;
+}
+
+.step-content b {
+  color: #ffffff;
+}
+
+.step-content em {
+  color: #81c784;
+  font-style: normal;
+}
+
+/* Registration Form View */
+.register-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+  padding: 10px 0;
+}
+
+.register-form {
+  max-width: 360px;
+}
+
+/* Password Toggle Icon Button inside inputs */
+.input-with-action {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-with-action .atm-input {
+  padding-right: 36px;
+}
+
+.input-action-btn {
+  position: absolute;
+  right: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.input-action-btn:hover {
+  color: var(--accent);
+}
+
+/* Top Bar Quick Logout Button */
+.logout-nav-btn {
+  background: rgba(74, 21, 21, 0.6) !important;
+  color: #ff9999 !important;
+  border-color: rgba(255, 102, 102, 0.4) !important;
+}
+
+.logout-nav-btn:hover {
+  background: #611919 !important;
+  border-color: #ff6666 !important;
+  box-shadow: 0 0 8px rgba(255, 102, 102, 0.3) !important;
+}
+
+/* Dashboard Direct Logout Button */
+.dashboard-logout-btn {
+  background: rgba(74, 21, 21, 0.7);
+  color: #ff9999;
+  border: 1px solid rgba(255, 102, 102, 0.35);
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  margin-left: auto;
+}
+
+.dashboard-logout-btn:hover {
+  background: #611919;
+  border-color: #ff6666;
+  color: #ffffff;
+}
+

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Laxmi Chit Fund ATM - Responsive Interactive ATM Simulator Frontend">
+  <title>Laxmi Chit Fund ATM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Ambient background glow -->
+  <div class="ambient-glow"></div>
+
+  <!-- Top Utilities Bar -->
+  <header class="top-nav-bar" id="top-nav-bar">
+    <div class="brand-badge">
+      <span class="live-dot"></span>
+      <span class="brand-name">LAXMI CHIT FUND ATM SYSTEM</span>
+    </div>
+    
+    <div class="top-controls">
+      <!-- Quick Account Switcher for Testing -->
+      <div class="quick-demo-pill" title="Demo Accounts from users.txt">
+        <label for="demo-account-select">Test Accounts:</label>
+        <select id="demo-account-select" aria-label="Quick Select Test Account">
+          <option value="">Quick Login...</option>
+          <option value="user1:1234">user1 (PIN: 1234, Bal: ₹860)</option>
+          <option value="user2:2222">user2 (PIN: 2222, Bal: ₹2610)</option>
+          <option value="user3:3333">user3 (PIN: 3333, Bal: ₹3000)</option>
+        </select>
+      </div>
+
+      <!-- User Guide Button -->
+      <button id="guide-btn" class="nav-btn" title="How to Register, Login and Logout">
+        <span class="btn-icon">💡</span>
+        <span class="btn-label">How to Use</span>
+      </button>
+
+      <!-- Kiosk hardware view toggle -->
+      <button id="toggle-view-btn" class="nav-btn" title="Toggle between Window View and Kiosk Bezel View">
+        <span class="btn-icon">🖵</span>
+        <span class="btn-label" id="view-mode-label">Kiosk View</span>
+      </button>
+
+      <!-- Sound & Speech Narration Toggle -->
+      <button id="toggle-sound-btn" class="nav-btn" title="Toggle ATM Audio and Voice Narration">
+        <span class="btn-icon" id="sound-icon">🔊</span>
+        <span class="btn-label" id="sound-label">Voice: ON</span>
+      </button>
+
+      <!-- Inactivity Timer Display -->
+      <div class="inactivity-badge" id="inactivity-timer" title="Inactivity auto-logout timer (40s)">
+        <span class="timer-icon">⏱</span>
+        <span id="timer-count">40s</span>
+      </div>
+
+      <!-- Quick Logout Button (visible when logged in) -->
+      <button id="top-logout-btn" class="nav-btn logout-nav-btn" style="display:none;" title="Securely Logout">
+        <span class="btn-icon">⏻</span>
+        <span class="btn-label">Logout</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Kiosk Wrapper -->
+  <main class="atm-outer-wrapper" id="atm-outer-wrapper">
+
+    <!-- ATM Hardware Frame (for Kiosk Mode) -->
+    <div class="kiosk-top-sign" id="kiosk-sign">
+      <div class="sign-logo">₹</div>
+      <div class="sign-text">LAXMI CHIT FUND &bull; 24/7 ATM SERVICES</div>
+    </div>
+
+    <!-- The ATM Main Window Container (1:1 with Reference Screenshot) -->
+    <div class="atm-window" id="atm-window">
+
+      <!-- Window Header Bar (Tkinter Window Chrome) -->
+      <div class="window-titlebar">
+        <div class="titlebar-left">
+          <span class="app-icon">🍃</span>
+          <span class="titlebar-title">Laxmi Chit Fund ATM</span>
+        </div>
+        <div class="titlebar-controls">
+          <button class="win-btn win-min" title="Minimize">&#9472;</button>
+          <button class="win-btn win-max" title="Maximize">&#9633;</button>
+          <button class="win-btn win-close" id="win-close-btn" title="Exit App">&#10005;</button>
+        </div>
+      </div>
+
+      <!-- Window Inner Layout -->
+      <div class="window-body">
+        
+        <!-- Left Sidebar: Menu Buttons -->
+        <aside class="sidebar-panel" id="sidebar-panel">
+          <div class="logo-area">
+            <h1 class="atm-logo">LAXMI<br>CHIT ATM</h1>
+          </div>
+
+          <nav class="action-buttons-list" id="action-buttons-list" aria-label="ATM Functions">
+            <button class="atm-action-btn" id="btn-balance" data-action="balance">Check Balance</button>
+            <button class="atm-action-btn" id="btn-withdraw" data-action="withdraw">Withdraw Money</button>
+            <button class="atm-action-btn" id="btn-deposit" data-action="deposit">Deposit Money</button>
+            <button class="atm-action-btn" id="btn-change-pin" data-action="change-pin">Change PIN</button>
+            <button class="atm-action-btn" id="btn-mini-statement" data-action="mini-statement">Mini Statement</button>
+            <button class="atm-action-btn" id="btn-transfer" data-action="transfer">Transfer Money</button>
+            <button class="atm-action-btn" id="btn-logout" data-action="logout">Logout</button>
+            <button class="atm-action-btn" id="btn-exit" data-action="exit">Exit</button>
+          </nav>
+
+          <div class="status-footer" id="sidebar-status">
+            Status: Awaiting login
+          </div>
+        </aside>
+
+        <!-- Right Main Screen Area -->
+        <section class="screen-panel" id="screen-panel">
+          <div class="crt-screen" id="crt-screen">
+            
+            <!-- Screen Top Bar -->
+            <div class="screen-top-bar">
+              <h2 class="screen-title" id="screen-title">Welcome to Laxmi Chit Fund ATM</h2>
+              <div class="screen-clock" id="screen-clock">2026-10-25 00:00:00</div>
+            </div>
+
+            <!-- Screen Dynamic Content Slot -->
+            <div class="screen-content" id="screen-content">
+              <!-- Rendered via JS based on current view -->
+            </div>
+
+            <!-- Bottom Message Status Bar -->
+            <div class="screen-message-bar" id="screen-message-bar"></div>
+
+            <!-- CRT scanlines overlay -->
+            <div class="crt-scanline"></div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <!-- ATM Hardware Peripherals (Card slot, Cash dispenser, Receipt printer, Pinpad) -->
+    <div class="kiosk-peripherals" id="kiosk-peripherals">
+      
+      <!-- Card Reader Slot -->
+      <div class="peripheral-module card-reader-module">
+        <div class="module-label">CARD READER</div>
+        <div class="card-slot-wrap" id="card-slot-wrap" title="Click or Drag Card to Insert">
+          <div class="card-slot-opening" id="card-slot">
+            <div class="slot-light" id="card-slot-light"></div>
+          </div>
+          <!-- Debit Card Object -->
+          <div class="virtual-atm-card" id="virtual-atm-card" draggable="true" title="Click to insert card">
+            <div class="card-chip"></div>
+            <div class="card-brand">LAXMI CHIT GOLD</div>
+            <div class="card-number">•••• •••• •••• 4242</div>
+            <div class="card-holder" id="card-holder-name">INSERT CARD</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cash Dispenser Module -->
+      <div class="peripheral-module cash-dispenser-module">
+        <div class="module-label">CASH DISPENSER</div>
+        <div class="cash-slot-opening" id="cash-slot">
+          <div class="cash-notes-stack" id="cash-notes-stack">
+            <div class="rupee-note note-1">₹500</div>
+            <div class="rupee-note note-2">₹500</div>
+            <div class="rupee-note note-3">₹500</div>
+          </div>
+        </div>
+        <div class="slot-status" id="cash-slot-status">Dispenser Ready</div>
+      </div>
+
+      <!-- Receipt Printer Module -->
+      <div class="peripheral-module receipt-printer-module">
+        <div class="module-label">RECEIPT PRINTER</div>
+        <div class="receipt-slot-opening" id="receipt-slot">
+          <div class="printed-receipt-paper" id="printed-receipt-paper" title="Click to view receipt">
+            <span class="receipt-peek-text">RECEIPT</span>
+          </div>
+        </div>
+        <div class="slot-status" id="receipt-slot-status">Paper Loaded</div>
+      </div>
+
+      <!-- Hardware Keypad -->
+      <div class="peripheral-module keypad-module">
+        <div class="module-label">SECURE PINPAD</div>
+        <div class="atm-keypad-grid" id="atm-keypad">
+          <button class="keypad-btn key-num" data-key="1">1</button>
+          <button class="keypad-btn key-num" data-key="2">2</button>
+          <button class="keypad-btn key-num" data-key="3">3</button>
+          <button class="keypad-btn key-action key-cancel" data-key="Cancel">CANCEL</button>
+
+          <button class="keypad-btn key-num" data-key="4">4</button>
+          <button class="keypad-btn key-num" data-key="5">5</button>
+          <button class="keypad-btn key-num" data-key="6">6</button>
+          <button class="keypad-btn key-action key-clear" data-key="Clear">CLEAR</button>
+
+          <button class="keypad-btn key-num" data-key="7">7</button>
+          <button class="keypad-btn key-num" data-key="8">8</button>
+          <button class="keypad-btn key-num" data-key="9">9</button>
+          <button class="keypad-btn key-action key-enter" data-key="Enter">ENTER</button>
+
+          <button class="keypad-btn key-blank" disabled></button>
+          <button class="keypad-btn key-num" data-key="0">0</button>
+          <button class="keypad-btn key-blank" disabled></button>
+          <button class="keypad-btn key-action key-help" data-key="Help">HELP</button>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Modal: PIN Verification (ask_pin_and_continue) -->
+  <div class="modal-overlay" id="pin-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="pin-modal-title">
+    <div class="modal-box" id="pin-modal-box">
+      <div class="modal-header">
+        <span class="modal-title" id="pin-modal-title">PIN Required</span>
+        <button class="modal-close-btn" id="modal-close-btn" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <label for="modal-pin-input" class="modal-label">Enter PIN to continue</label>
+        <div class="pin-input-wrap">
+          <input type="password" id="modal-pin-input" maxlength="4" autocomplete="off" autofocus placeholder="••••" />
+          <button type="button" class="toggle-pin-visibility" id="toggle-modal-pin" title="Show/Hide PIN">👁</button>
+        </div>
+        <div class="modal-feedback" id="modal-feedback"></div>
+        <div class="modal-actions">
+          <button class="modal-btn modal-submit-btn" id="modal-pin-submit">Submit</button>
+          <button class="modal-btn modal-cancel-btn" id="modal-pin-cancel">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Receipt Full Viewer -->
+  <div class="modal-overlay" id="receipt-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="receipt-modal-title">
+    <div class="modal-box receipt-modal-box">
+      <div class="modal-header">
+        <span class="modal-title" id="receipt-modal-title">Laxmi Chit Fund ATM Receipt</span>
+        <button class="modal-close-btn" id="receipt-modal-close" aria-label="Close receipt modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="receipt-paper" id="full-receipt-text"></div>
+        <div class="modal-actions">
+          <button class="modal-btn modal-submit-btn" id="print-receipt-btn">🖨 Print / Download</button>
+          <button class="modal-btn modal-cancel-btn" id="close-receipt-btn">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: User Guide (How to Register, Login, and Logout) -->
+  <div class="modal-overlay" id="guide-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="guide-modal-title">
+    <div class="modal-box guide-modal-box">
+      <div class="modal-header">
+        <span class="modal-title" id="guide-modal-title">📖 ATM Guide: Register, Login & Logout</span>
+        <button class="modal-close-btn" id="guide-modal-close" aria-label="Close guide modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="guide-steps-list">
+          <div class="guide-step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <strong>How to Register (New Users):</strong>
+              <p>Click <em>"New User? Register"</em> on the Welcome screen or Login screen. Enter your chosen <b>Username</b>, set a <b>4-digit PIN / Password</b>, confirm it, and choose an initial deposit (e.g. ₹1,000). Your account is instantly saved!</p>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <strong>How to Login:</strong>
+              <p>Click <em>"Start / Login"</em> or click the Debit Card. Type your registered <b>Username</b> and <b>PIN / Password</b>, then click <em>"Login"</em>. You will enter your account dashboard!</p>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <strong>How to Perform Transactions:</strong>
+              <p>From the left menu, select <b>Check Balance</b>, <b>Withdraw Money</b>, <b>Deposit Money</b>, <b>Transfer Money</b>, or <b>Mini Statement</b>. For security, withdrawals, transfers, and balance checks prompt for your 4-digit PIN.</p>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <strong>How to Logout:</strong>
+              <p>Whenever you finish, click <b>"Logout"</b> in the left sidebar menu, the top navigation bar, or the red <b>"Logout ⏻"</b> button on the dashboard. The ATM also automatically logs you out after 40 seconds of inactivity for your protection.</p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="modal-btn modal-submit-btn" id="close-guide-btn">Got It!</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Responsive Mobile Menu Drawer Toggle -->
+  <button class="mobile-drawer-btn" id="mobile-drawer-btn" aria-label="Toggle ATM Actions Menu">
+    <span class="hamburger-line"></span>
+    <span class="hamburger-line"></span>
+    <span class="hamburger-line"></span>
+  </button>
+
+  <script src="app.js"></script>
+</body>
+</html>
